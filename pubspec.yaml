@@ -1,7 +1,9 @@
 name: megasegni_ai
-description: Base project for MegaSegni AI
+description: Flutter base project for MegaSegni AI
 version: 0.0.1
 environment:
   sdk: ">=2.19.0 <3.0.0"
 
-
+dependencies:
+  flutter:
+    sdk: Flutter
