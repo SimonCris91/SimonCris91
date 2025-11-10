@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'modules/maya/maya.dart';
+import 'modules/human_design/human_design.dart';
+import 'modules/astrology/astrology.dart';
 
 void main() {
+  // Esempio: inizializza i moduli
+  MayaModule().run();
+  HumanDesignModule().run();
+  AstrologyModule().run();
+
   runApp(MegaSegniApp());
 }
 
@@ -16,4 +24,3 @@ class MegaSegniApp extends StatelessWidget {
     );
   }
 }
-
