@@ -1,9 +1,18 @@
-name: megasegni_ai
-description: Flutter base project for MegaSegni AI
-version: 0.0.1
+name: megasegni_ai_flutter
+description: MegaSegni AI Flutter Project
+publish_to: "none"
+
 environment:
-  sdk: ">=2.19.0 <3.0.0"
+  sdk: ">=2.18.0 <3.0.0"
 
 dependencies:
   flutter:
-    sdk: Flutter
+    sdk: flutter
+  http: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

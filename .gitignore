@@ -2,4 +2,4 @@
 .dart_tool/
 .packages
 .build/
-.pub/
+.pub/flutter/
