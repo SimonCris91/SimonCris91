@@ -1,103 +1,35 @@
-import 'package:flutter/material.dart';
-import 'package:metasegnoai/modules/astrology_module.dart';
-import 'package:metasegnoai/modules/maya_calendar_module.dart';
-import 'package:metasegnoai/modules/human_design_module.dart';
-import 'package:geocoding/geocoding.dart'; // Conversione città -> lat/lon
+import 'dart:async';
+import 'modules/human_design.dart';
+import 'modules/astrology.dart';
+import 'modules/maya.dart';
+import 'modules/location_modulus.dart';
 
-void main() {
-  runApp(MetaSegnoAITest());
-}
+Future<void> main() async {
+  // --- Human Design ---
+  final human = HumanDesign();
+  final humanProfile = human.getProfile("01/01/2000", "Roma", "12:00");
+  print("Human Design Profile:");
+  print(humanProfile);
+  print("------------------------------------------------");
 
-class MetaSegnoAITest extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MetaSegnoAI Test',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: TestInputPage(),
-    );
-  }
-}
+  // --- Astrology ---
+  final astrology = AstrologyModule();
+  final zodiacSign = astrology.getSign("01/01/2000");
+  print("Astrological Sign:");
+  print(zodiacSign);
+  print("------------------------------------------------");
 
-class TestInputPage extends StatefulWidget {
-  @override
-  _TestInputPageState createState() => _TestInputPageState();
-}
+  // --- Maya ---
+  final maya = MayaModule();
+  final kin = maya.getKin("01/01/2000");
+  print("Mayan Kin:");
+  print(kin);
+  print("------------------------------------------------");
 
-class _TestInputPageState extends State<TestInputPage> {
-  final _formKey = GlobalKey<FormState>();
-
-  String name = 'Simone';
-  String dateOfBirth = '1991-02-08';
-  String timeOfBirth = '12:00';
-  String cityOfBirth = 'Olbia';
-
-  String resultHumanDesign = '';
-  String resultAstrology = '';
-  String resultMaya = '';
-
-  Future<void> calculateProfile() async {
-    try {
-      // Converti città in coordinate
-      List<Location> locations = await locationFromAddress(cityOfBirth);
-      double latitude = locations.first.latitude;
-      double longitude = locations.first.longitude;
-
-      // Calcola i profili dai moduli
-      resultHumanDesign = HumanDesignModule.getProfile(dateOfBirth, timeOfBirth, latitude, longitude);
-      resultAstrology = AstrologyModule.getZodiacSign(dateOfBirth, timeOfBirth, latitude, longitude);
-      resultMaya = MayaCalendarModule.getKin(dateOfBirth);
-
-      setState(() {});
-    } catch (e) {
-      setState(() {
-        resultHumanDesign = 'Errore: $e';
-        resultAstrology = 'Errore: $e';
-        resultMaya = 'Errore: $e';
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('MetaSegnoAI Test')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            TextFormField(
-              initialValue: name,
-              decoration: InputDecoration(labelText: 'Nome'),
-              onChanged: (val) => name = val,
-            ),
-            TextFormField(
-              initialValue: dateOfBirth,
-              decoration: InputDecoration(labelText: 'Data di nascita (YYYY-MM-DD)'),
-              onChanged: (val) => dateOfBirth = val,
-            ),
-            TextFormField(
-              initialValue: timeOfBirth,
-              decoration: InputDecoration(labelText: 'Ora di nascita (HH:MM)'),
-              onChanged: (val) => timeOfBirth = val,
-            ),
-            TextFormField(
-              initialValue: cityOfBirth,
-              decoration: InputDecoration(labelText: 'Città di nascita'),
-              onChanged: (val) => cityOfBirth = val,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: calculateProfile,
-              child: Text('Calcola Profilo'),
-            ),
-            SizedBox(height: 20),
-            Text('Human Design: $resultHumanDesign'),
-            Text('Zodiac Sign: $resultAstrology'),
-            Text('Maya Kin: $resultMaya'),
-          ],
-        ),
-      ),
-    );
-  }
+  // --- Location Module ---
+  final location = LocationModulus();
+  final cityMessage = await location.getCityMessage("Roma");
+  print("City Message:");
+  print(cityMessage);
+  print("------------------------------------------------");
 }

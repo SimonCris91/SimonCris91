@@ -1,18 +1,7 @@
-name: megasegni_ai_flutter
-description: MegaSegni AI Flutter Project
-publish_to: "none"
-
+name: metasegno_ai
+description: MetaSegnoAI senza Flutter
+version: 0.0.1
 environment:
-  sdk: ">=2.18.0 <3.0.0"
-
+  sdk: '>=3.9.0 <4.0.0'
 dependencies:
-  flutter:
-    sdk: flutter
   http: ^1.1.0
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
-flutter:
-  uses-material-design: true
