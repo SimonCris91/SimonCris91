@@ -1,66 +1,103 @@
-import 'dart:io';
-import 'modules/maya/maya.dart';
-import 'modules/human_design/human_design.dart';
-import 'modules/astrology/astrology.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:metasegnoai/modules/astrology_module.dart';
+import 'package:metasegnoai/modules/maya_calendar_module.dart';
+import 'package:metasegnoai/modules/human_design_module.dart';
+import 'package:geocoding/geocoding.dart'; // Conversione città -> lat/lon
 
-const String OPENCAGE_API_KEY = '81b4df25eda547da9165158f38134c7b';
-
-Future<Map<String, double>> getCoordinates(String city) async {
-  final url = Uri.parse(
-      'https://api.opencagedata.com/geocode/v1/json?q=$city&key=$OPENCAGE_API_KEY&language=it&limit=1');
-  final response = await http.get(url);
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    if (data['results'] != null && data['results'].length > 0) {
-      final geometry = data['results'][0]['geometry'];
-      return {'lat': geometry['lat'], 'lng': geometry['lng']};
-    }
-  }
-  throw Exception('Città non trovata');
+void main() {
+  runApp(MetaSegnoAITest());
 }
 
-void main() async {
-  print('--- MegaSegni AI Test Interattivo con Luogo ---\n');
+class MetaSegnoAITest extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'MetaSegnoAI Test',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: TestInputPage(),
+    );
+  }
+}
 
-  stdout.write('Giorno di nascita (1-31): ');
-  int day = int.parse(stdin.readLineSync()!);
+class TestInputPage extends StatefulWidget {
+  @override
+  _TestInputPageState createState() => _TestInputPageState();
+}
 
-  stdout.write('Mese di nascita (1-12): ');
-  int month = int.parse(stdin.readLineSync()!);
+class _TestInputPageState extends State<TestInputPage> {
+  final _formKey = GlobalKey<FormState>();
 
-  stdout.write('Anno di nascita: ');
-  int year = int.parse(stdin.readLineSync()!);
+  String name = 'Simone';
+  String dateOfBirth = '1991-02-08';
+  String timeOfBirth = '12:00';
+  String cityOfBirth = 'Olbia';
 
-  stdout.write('Ora di nascita (0-23): ');
-  int hour = int.parse(stdin.readLineSync()!);
+  String resultHumanDesign = '';
+  String resultAstrology = '';
+  String resultMaya = '';
 
-  stdout.write('Minuti di nascita (0-59): ');
-  int minute = int.parse(stdin.readLineSync()!);
+  Future<void> calculateProfile() async {
+    try {
+      // Converti città in coordinate
+      List<Location> locations = await locationFromAddress(cityOfBirth);
+      double latitude = locations.first.latitude;
+      double longitude = locations.first.longitude;
 
-  stdout.write('Città di nascita: ');
-  String city = stdin.readLineSync()!;
+      // Calcola i profili dai moduli
+      resultHumanDesign = HumanDesignModule.getProfile(dateOfBirth, timeOfBirth, latitude, longitude);
+      resultAstrology = AstrologyModule.getZodiacSign(dateOfBirth, timeOfBirth, latitude, longitude);
+      resultMaya = MayaCalendarModule.getKin(dateOfBirth);
 
-  print('\nCalcolo coordinate...');
-  Map<String, double> coords = await getCoordinates(city);
+      setState(() {});
+    } catch (e) {
+      setState(() {
+        resultHumanDesign = 'Errore: $e';
+        resultAstrology = 'Errore: $e';
+        resultMaya = 'Errore: $e';
+      });
+    }
+  }
 
-  print('Latitudine: ${coords['lat']}, Longitudine: ${coords['lng']}');
-
-  // ====================
-  // Moduli
-  // ====================
-  MayaModule maya = MayaModule();
-  HumanDesignModule human = HumanDesignModule();
-  AstrologyModule astrology = AstrologyModule();
-
-  String kin = maya.getKin(day, month);
-  String humanProfile = human.getProfileAdvanced(day, month, year, hour, minute, coords['lat']!, coords['lng']!);
-  String zodiacSign = astrology.getWesternSignAdvanced(day, month, hour, minute, coords['lat']!, coords['lng']!);
-
-  print('\n--- Risultati ---\n');
-  print('Giorno Kin: $kin');
-  print('Profilo Human Design: $humanProfile');
-  print('Segno Zodiacale: $zodiacSign');
-  print('\n--- Test completato ---');
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('MetaSegnoAI Test')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            TextFormField(
+              initialValue: name,
+              decoration: InputDecoration(labelText: 'Nome'),
+              onChanged: (val) => name = val,
+            ),
+            TextFormField(
+              initialValue: dateOfBirth,
+              decoration: InputDecoration(labelText: 'Data di nascita (YYYY-MM-DD)'),
+              onChanged: (val) => dateOfBirth = val,
+            ),
+            TextFormField(
+              initialValue: timeOfBirth,
+              decoration: InputDecoration(labelText: 'Ora di nascita (HH:MM)'),
+              onChanged: (val) => timeOfBirth = val,
+            ),
+            TextFormField(
+              initialValue: cityOfBirth,
+              decoration: InputDecoration(labelText: 'Città di nascita'),
+              onChanged: (val) => cityOfBirth = val,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: calculateProfile,
+              child: Text('Calcola Profilo'),
+            ),
+            SizedBox(height: 20),
+            Text('Human Design: $resultHumanDesign'),
+            Text('Zodiac Sign: $resultAstrology'),
+            Text('Maya Kin: $resultMaya'),
+          ],
+        ),
+      ),
+    );
+  }
 }
